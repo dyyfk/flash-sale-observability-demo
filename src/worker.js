@@ -10,6 +10,7 @@ const { Pool } = pg;
 const metricsPort = Number(process.env.WORKER_METRICS_PORT ?? process.env.PORT ?? 3001);
 const orderQueueName = process.env.ORDER_QUEUE_NAME ?? "orders:pending";
 const maxAttempts = Number(process.env.WORKER_MAX_ATTEMPTS ?? 3);
+const processingDelayMs = Number(process.env.WORKER_PROCESSING_DELAY_MS ?? 0);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -66,6 +67,12 @@ async function query(operation, text, params = []) {
   }
 }
 
+function delay(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function setQueueDepthMetric() {
   const depth = await redis.llen(orderQueueName);
   queueDepthGauge.set({ queue: orderQueueName }, depth);
@@ -120,6 +127,10 @@ async function processOrder(orderId) {
   const db = await pool.connect();
   const endDb = dbDuration.startTimer({ operation: "process_order_transaction" });
   try {
+    if (processingDelayMs > 0) {
+      await delay(processingDelayMs);
+    }
+
     await db.query("BEGIN");
 
     const updated = await db.query(

@@ -61,6 +61,7 @@ DATABASE_URL=postgres://postgres:postgres@postgres.railway.internal:5432/flash_s
 REDIS_URL=redis://redis.railway.internal:6379
 WORKER_DB_POOL_SIZE=8
 WORKER_MAX_ATTEMPTS=3
+WORKER_PROCESSING_DELAY_MS=750
 ORDER_QUEUE_NAME=orders:pending
 ```
 

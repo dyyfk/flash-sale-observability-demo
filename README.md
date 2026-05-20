@@ -29,6 +29,7 @@ An editable Excalidraw version is included at [`architecture.excalidraw`](archit
 - Postgres as the source of truth for products, inventory, and orders.
 - Redis as both a product-read cache and an async order queue.
 - Worker replicas that own the hot inventory write path.
+- Configurable demo worker delay with `WORKER_PROCESSING_DELAY_MS` so queue depth is visible during bursts.
 - Controlled backpressure with `MAX_QUEUE_DEPTH` when workers are saturated.
 - Prometheus metrics and a pre-provisioned Grafana dashboard.
 - k6 tests for read traffic, async order spikes, and synchronous baseline comparison.
@@ -120,6 +121,8 @@ Recommended demo sequence:
 1. Run `load/products.js` and show the Redis cache hit rate rising.
 2. Run `load/orders-sync-spike.js` to show the synchronous write path getting slower as Postgres becomes the bottleneck.
 3. Run `load/orders-spike.js` to show the API staying responsive while queue depth exposes downstream saturation.
+
+The local compose file sets `WORKER_PROCESSING_DELAY_MS=750` so the demo page's **50x Burst** button creates visible Redis backlog before workers drain it.
 
 ## Scaling Demo
 

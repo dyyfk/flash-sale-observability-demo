@@ -638,7 +638,7 @@
               <div class="button-grid">
                 <button id="queueOrder" class="btn primary" type="button"><span class="icon">+</span> Queue order</button>
                 <button id="syncOrder" class="btn" type="button"><span class="icon">S</span> Sync order</button>
-                <button id="burst" class="btn warning" type="button"><span class="icon">10x</span> Burst</button>
+                <button id="burst" class="btn warning" type="button"><span class="icon">50x</span> Burst</button>
               </div>
               <div id="log" class="log" aria-live="polite">waiting for activity</div>
             </div>
@@ -746,7 +746,7 @@
             <ul class="evidence-list">
               <li><span class="tick">A</span><span>API/gateway EOFs appear under heavy connection pressure.</span></li>
               <li><span class="tick">B</span><span>Sync writes push user latency directly onto Postgres row locks.</span></li>
-              <li><span class="tick">C</span><span>Async intake stays safer, but Redis queue depth grows.</span></li>
+              <li><span class="tick">C</span><span>Async intake stays safer, but Redis queue depth grows during the 50-order Burst.</span></li>
               <li><span class="tick">D</span><span>More replicas on one small host increase CPU and DB contention.</span></li>
             </ul>
           </div>
@@ -1080,7 +1080,8 @@
         setBusy(true);
         try {
           const productId = state.selectedProductId;
-          const requests = Array.from({ length: 10 }, (_, index) => request("/orders", {
+          const burstSize = 50;
+          const requests = Array.from({ length: burstSize }, (_, index) => request("/orders", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -1094,12 +1095,25 @@
           }));
           const settled = await Promise.allSettled(requests);
           const accepted = settled.filter((item) => item.status === "fulfilled").length;
-          log({ burst: { attempted: 10, accepted, rejected: 10 - accepted } });
+          log({ burst: { attempted: burstSize, accepted, rejected: burstSize - accepted } });
           toast(`${accepted} orders queued`);
           await loadMetrics();
+          startFastPolling();
         } finally {
           setBusy(false);
         }
+      }
+
+      function startFastPolling() {
+        let remaining = 12;
+        window.clearInterval(window.fastPollTimer);
+        window.fastPollTimer = window.setInterval(async () => {
+          await loadMetrics();
+          remaining -= 1;
+          if (remaining <= 0) {
+            window.clearInterval(window.fastPollTimer);
+          }
+        }, 1000);
       }
 
       async function refreshAll() {
