@@ -1,6 +1,8 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
+const baseUrl = __ENV.BASE_URL || "http://localhost:3000";
+
 export const options = {
   stages: [
     { duration: "10s", target: 20 },
@@ -17,7 +19,7 @@ export default function () {
   const productId = (__VU % 3) + 1;
   const key = `sync-${__VU}-${__ITER}-${Date.now()}`;
   const res = http.post(
-    "http://localhost:3000/orders-sync",
+    `${baseUrl}/orders-sync`,
     JSON.stringify({ productId }),
     {
       headers: {

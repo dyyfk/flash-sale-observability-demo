@@ -2,6 +2,8 @@
 
 Small distributed system for an infrastructure interview. It models a flash-sale order path with an API, Redis queue/cache, async worker, Postgres inventory writes, Prometheus metrics, Grafana dashboard, and k6 load tests.
 
+Live API: [`https://api-production-80a1.up.railway.app`](https://api-production-80a1.up.railway.app)
+
 ## Architecture
 
 ```mermaid
@@ -104,6 +106,13 @@ k6 run load/orders-spike.js
 k6 run load/orders-sync-spike.js
 ```
 
+Run the same tests against the Railway API:
+
+```bash
+BASE_URL=https://api-production-80a1.up.railway.app k6 run load/products.js
+BASE_URL=https://api-production-80a1.up.railway.app k6 run load/orders-spike.js
+```
+
 Recommended demo sequence:
 
 1. Run `load/products.js` and show the Redis cache hit rate rising.
@@ -175,7 +184,14 @@ Measured locally:
 
 ## Cloud Deployment
 
-`railway.json` and startup schema creation are included so the same image can run on Railway with managed Postgres and Redis. See [`DEPLOYMENT.md`](DEPLOYMENT.md).
+`railway.json` and startup schema creation are included so the same image can run on Railway. See [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
+Current cloud deployment:
+
+- API: `https://api-production-80a1.up.railway.app`
+- Worker: Railway private service.
+- Postgres: Railway service running `postgres:16-alpine`.
+- Redis: Railway service running `redis:7-alpine`.
 
 ## More Time
 

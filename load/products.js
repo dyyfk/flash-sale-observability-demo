@@ -1,6 +1,8 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
+const baseUrl = __ENV.BASE_URL || "http://localhost:3000";
+
 export const options = {
   stages: [
     { duration: "15s", target: 20 },
@@ -14,7 +16,7 @@ export const options = {
 };
 
 export default function () {
-  const res = http.get("http://localhost:3000/products");
+  const res = http.get(`${baseUrl}/products`);
   check(res, { "products ok": (r) => r.status === 200 });
   sleep(0.1);
 }
