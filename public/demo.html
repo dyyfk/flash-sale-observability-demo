@@ -960,20 +960,17 @@
       }
 
       async function loadMetrics() {
-        const text = await request("/metrics");
-        const depth = parseMetric(text, "order_queue_depth");
-        const queued = parseMetric(text, "orders_enqueued_total", { status: "queued" });
-        const rejected = parseMetric(text, "orders_enqueued_total", { status: "rejected" });
-        const hits = parseMetric(text, "cache_events_total", { result: "hit" });
-        const misses = parseMetric(text, "cache_events_total", { result: "miss" });
-        const p95 = histogramP95(text, "http_request_duration_seconds", { route: "/orders" });
+        const state = await request("/demo-state");
 
-        $("queueValue").textContent = number(depth);
-        $("intakeValue").textContent = number(queued);
-        $("cacheValue").textContent = hits + misses ? `${Math.round((hits / (hits + misses)) * 100)}%` : "0%";
-        $("latencyValue").textContent = p95 === Infinity ? ">5s" : `${Math.round(p95 * 1000)}ms`;
-        if (rejected > 0) {
-          $("queueValue").nextElementSibling.textContent = `${number(rejected)} controlled rejections`;
+        $("queueValue").textContent = number(state.queueDepth);
+        $("intakeValue").textContent = number(state.orderIntake);
+        $("cacheValue").textContent = state.cacheSamples ? `${state.cacheHitRate}%` : "0%";
+        $("latencyValue").textContent = state.httpP95Ms === null ? ">5s" : `${number(state.httpP95Ms)}ms`;
+        $("intakeValue").nextElementSibling.textContent = `${number(state.totalOrders)} total orders`;
+        if (state.rejectedOrders > 0) {
+          $("queueValue").nextElementSibling.textContent = `${number(state.rejectedOrders)} rejected or failed`;
+        } else {
+          $("queueValue").nextElementSibling.textContent = "Redis order backlog";
         }
       }
 

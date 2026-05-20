@@ -37,6 +37,7 @@ app.use((req, res, next) => {
   if (
     req.path === "/health" ||
     req.path === "/products" ||
+    req.path === "/demo-state" ||
     req.path === "/metrics" ||
     req.path.startsWith("/orders")
   ) {
@@ -152,6 +153,50 @@ async function refreshInventoryMetrics() {
   }
 }
 
+function parseMetric(text, prefix, labels = {}) {
+  for (const line of text.split("\n")) {
+    if (!line.startsWith(prefix)) {
+      continue;
+    }
+    const matches = Object.entries(labels).every(([key, value]) => (
+      line.includes(`${key}="${value}"`)
+    ));
+    if (matches) {
+      const parts = line.trim().split(/\s+/);
+      return Number(parts[parts.length - 1]);
+    }
+  }
+  return 0;
+}
+
+function histogramP95(text, metric, labelFilter) {
+  const buckets = [];
+  for (const line of text.split("\n")) {
+    if (!line.startsWith(`${metric}_bucket`)) {
+      continue;
+    }
+    const matches = Object.entries(labelFilter).every(([key, value]) => (
+      line.includes(`${key}="${value}"`)
+    ));
+    if (!matches) {
+      continue;
+    }
+    const le = line.match(/le="([^"]+)"/)?.[1];
+    const value = Number(line.trim().split(/\s+/).pop());
+    if (le && Number.isFinite(value)) {
+      buckets.push({ le: le === "+Inf" ? Infinity : Number(le), value });
+    }
+  }
+
+  buckets.sort((a, b) => a.le - b.le);
+  const total = buckets[buckets.length - 1]?.value ?? 0;
+  if (!total) {
+    return 0;
+  }
+  const target = total * 0.95;
+  return buckets.find((bucket) => bucket.value >= target)?.le ?? 0;
+}
+
 async function enforceRateLimit(req, res, next) {
   try {
     const key = `rate:${req.ip}`;
@@ -216,6 +261,40 @@ app.get("/products", asyncHandler(async (_req, res) => {
   const body = { products: result.rows, cached: false };
   await redis.set(cacheKey, JSON.stringify(body), "EX", cacheTtlSeconds);
   return res.json(body);
+}));
+
+app.get("/demo-state", asyncHandler(async (_req, res) => {
+  const [queueDepth, orderSummary, metricsText] = await Promise.all([
+    redis.llen(orderQueueName),
+    query(
+      "demo_order_summary",
+      `SELECT
+         count(*)::int AS total_orders,
+         count(*) FILTER (WHERE created_at >= now() - interval '15 minutes')::int AS recent_orders,
+         count(*) FILTER (WHERE status = 'accepted')::int AS accepted_orders,
+         count(*) FILTER (WHERE status IN ('rejected', 'failed'))::int AS rejected_orders
+       FROM orders`
+    ),
+    client.register.metrics()
+  ]);
+
+  const hits = parseMetric(metricsText, "cache_events_total", { result: "hit" });
+  const misses = parseMetric(metricsText, "cache_events_total", { result: "miss" });
+  const samples = hits + misses;
+  const p95Seconds = histogramP95(metricsText, "http_request_duration_seconds", {
+    route: "/orders"
+  });
+
+  res.json({
+    queueDepth,
+    orderIntake: orderSummary.rows[0]?.recent_orders ?? 0,
+    totalOrders: orderSummary.rows[0]?.total_orders ?? 0,
+    acceptedOrders: orderSummary.rows[0]?.accepted_orders ?? 0,
+    rejectedOrders: orderSummary.rows[0]?.rejected_orders ?? 0,
+    cacheHitRate: samples ? Math.round((hits / samples) * 100) : 0,
+    cacheSamples: samples,
+    httpP95Ms: p95Seconds === Infinity ? null : Math.round(p95Seconds * 1000)
+  });
 }));
 
 app.post("/orders", enforceRateLimit, asyncHandler(async (req, res) => {
