@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: api
+    dns_sd_configs:
+      - names: ["api"]
+        type: A
+        port: 3000
+
+  - job_name: worker
+    dns_sd_configs:
+      - names: ["worker"]
+        type: A
+        port: 3001

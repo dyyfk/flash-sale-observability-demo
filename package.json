@@ -1,0 +1,18 @@
+{
+  "name": "flash-sale-observability-demo",
+  "version": "1.0.0",
+  "description": "Small distributed flash-sale inventory system with Redis, Postgres, Prometheus, Grafana, and k6 load tests.",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "worker": "node src/worker.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "pg": "^8.12.0",
+    "prom-client": "^15.1.3"
+  }
+}
