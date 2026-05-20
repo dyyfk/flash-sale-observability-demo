@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import express from "express";
 import Redis from "ioredis";
@@ -14,6 +16,7 @@ const cacheTtlSeconds = Number(process.env.CACHE_TTL_SECONDS ?? 5);
 const rateLimitPerSecond = Number(process.env.RATE_LIMIT_PER_SECOND ?? 500);
 const maxQueueDepth = Number(process.env.MAX_QUEUE_DEPTH ?? 2000);
 const orderQueueName = process.env.ORDER_QUEUE_NAME ?? "orders:pending";
+const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "public");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -28,6 +31,14 @@ const redis = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379", {
 const app = express();
 app.set("trust proxy", true);
 app.use(express.json({ limit: "64kb" }));
+
+app.get("/", (_req, res) => {
+  res.redirect("/demo");
+});
+
+app.get(["/demo", "/demo/"], (_req, res) => {
+  res.sendFile(path.join(publicDir, "demo.html"));
+});
 
 client.collectDefaultMetrics({
   labels: { service: "api" }

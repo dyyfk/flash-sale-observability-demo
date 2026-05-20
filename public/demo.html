@@ -1,0 +1,1134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Flash Sale Demo Console</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f7f2;
+        --surface: #ffffff;
+        --surface-2: #f0f3ed;
+        --ink: #18201d;
+        --muted: #68716d;
+        --line: #dbe1d7;
+        --green: #277a4f;
+        --green-soft: #dff1e6;
+        --blue: #286c9d;
+        --blue-soft: #dfedf7;
+        --amber: #a46a16;
+        --amber-soft: #f6ead6;
+        --red: #b63b35;
+        --red-soft: #f7dedc;
+        --shadow: 0 18px 55px rgba(31, 43, 35, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(246, 247, 242, 0.95)),
+          var(--bg);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        letter-spacing: 0;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .shell {
+        width: min(1460px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 20px 0 28px;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: center;
+        margin-bottom: 18px;
+      }
+
+      .brand {
+        display: flex;
+        min-width: 0;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .mark {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: conic-gradient(from 90deg, var(--green), var(--blue), var(--amber), var(--green));
+        color: #fff;
+        font-weight: 800;
+        box-shadow: var(--shadow);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.3rem, 2.5vw, 2rem);
+        line-height: 1.05;
+      }
+
+      .subtitle {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .btn {
+        display: inline-flex;
+        min-height: 40px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--ink);
+        padding: 0 14px;
+        cursor: pointer;
+        transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+        white-space: nowrap;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        border-color: #b9c4b5;
+      }
+
+      .btn.primary {
+        border-color: #1f6944;
+        background: var(--green);
+        color: #fff;
+      }
+
+      .btn.warning {
+        border-color: #955a0d;
+        background: var(--amber);
+        color: #fff;
+      }
+
+      .btn:disabled {
+        cursor: wait;
+        opacity: 0.62;
+        transform: none;
+      }
+
+      .icon {
+        min-width: 1.1em;
+        text-align: center;
+        font-weight: 800;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .metric {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 14px;
+        box-shadow: 0 8px 28px rgba(31, 43, 35, 0.06);
+      }
+
+      .metric .label {
+        color: var(--muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+      }
+
+      .metric .value {
+        margin-top: 8px;
+        font-size: clamp(1.25rem, 2vw, 1.8rem);
+        font-weight: 750;
+        line-height: 1;
+      }
+
+      .metric .hint {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.85rem;
+        overflow-wrap: anywhere;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(320px, 1.2fr) minmax(320px, 0.9fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .evidence-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 12px 34px rgba(31, 43, 35, 0.08);
+        overflow: hidden;
+      }
+
+      .panel-head {
+        display: flex;
+        min-height: 58px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(240, 243, 237, 0.72);
+      }
+
+      .panel-title {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .panel-sub {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+
+      .panel-body {
+        padding: 16px 18px;
+      }
+
+      .evidence-list {
+        display: grid;
+        gap: 9px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .evidence-list li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px;
+        align-items: start;
+        color: #303a35;
+        font-size: 0.92rem;
+        line-height: 1.35;
+      }
+
+      .tick {
+        display: inline-grid;
+        width: 19px;
+        height: 19px;
+        place-items: center;
+        border-radius: 6px;
+        background: var(--green-soft);
+        color: var(--green);
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .stat-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+
+      .stat-table th,
+      .stat-table td {
+        border-bottom: 1px solid var(--line);
+        padding: 9px 7px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .stat-table th {
+        color: var(--muted);
+        font-weight: 650;
+      }
+
+      .product-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .product-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 13px;
+        background: #fff;
+      }
+
+      .product-name {
+        margin: 0;
+        font-weight: 720;
+      }
+
+      .product-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .chip {
+        display: inline-flex;
+        min-height: 26px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--surface-2);
+        color: var(--muted);
+        padding: 0 10px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+      }
+
+      .chip.good {
+        border-color: #b6d8c3;
+        background: var(--green-soft);
+        color: #1d643f;
+      }
+
+      .chip.warn {
+        border-color: #e4ca9e;
+        background: var(--amber-soft);
+        color: #835112;
+      }
+
+      .chip.bad {
+        border-color: #ebb9b5;
+        background: var(--red-soft);
+        color: #9b2e2a;
+      }
+
+      .selected {
+        border-color: #87b89a;
+        box-shadow: inset 0 0 0 1px #87b89a;
+      }
+
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .control-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+      }
+
+      select {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        padding: 0 12px;
+      }
+
+      .button-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 8px;
+        max-height: 430px;
+        overflow: auto;
+        padding-right: 2px;
+      }
+
+      .order-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 10px;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 11px;
+      }
+
+      .order-id {
+        display: grid;
+        width: 42px;
+        height: 34px;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--surface-2);
+        color: var(--muted);
+        font-weight: 750;
+      }
+
+      .order-main {
+        min-width: 0;
+      }
+
+      .order-product {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 690;
+      }
+
+      .order-time {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .log {
+        min-height: 92px;
+        max-height: 210px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #111713;
+        color: #dceadf;
+        padding: 13px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .strip {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .stage {
+        min-height: 62px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-2);
+        padding: 10px;
+      }
+
+      .stage b {
+        display: block;
+        font-size: 0.88rem;
+      }
+
+      .stage span {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        overflow-wrap: anywhere;
+      }
+
+      .status-dot {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+
+      .status-dot.good {
+        background: var(--green);
+      }
+
+      .status-dot.warn {
+        background: var(--amber);
+      }
+
+      .status-dot.bad {
+        background: var(--red);
+      }
+
+      .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        display: none;
+        max-width: min(420px, calc(100vw - 36px));
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: var(--shadow);
+        padding: 12px 14px;
+        color: var(--ink);
+        z-index: 20;
+      }
+
+      .toast.show {
+        display: block;
+      }
+
+      @media (max-width: 1050px) {
+        .metrics {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .grid,
+        .evidence-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .shell {
+          width: min(100vw - 20px, 1460px);
+          padding-top: 12px;
+        }
+
+        .topbar,
+        .control-row {
+          grid-template-columns: 1fr;
+        }
+
+        .actions {
+          justify-content: flex-start;
+        }
+
+        .metrics,
+        .button-grid,
+        .strip,
+        .evidence-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .product-row,
+        .order-row {
+          grid-template-columns: 1fr;
+        }
+
+        .order-id {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div class="brand">
+          <div class="mark">FS</div>
+          <div>
+            <h1>Flash Sale Demo Console</h1>
+            <div class="subtitle">Order intake, queue pressure, cache behavior, and inventory outcomes</div>
+          </div>
+        </div>
+        <nav class="actions" aria-label="Demo links">
+          <a class="btn" href="https://api-production-80a1.up.railway.app/health" target="_blank" rel="noreferrer"><span class="icon">Up</span> Cloud</a>
+          <a class="btn" href="/metrics" target="_blank" rel="noreferrer"><span class="icon">#</span> Metrics</a>
+          <a id="grafanaLink" class="btn" href="http://localhost:3100/d/flash-sale-signals/flash-sale-production-signals?orgId=1&from=now-15m&to=now&refresh=5s" target="_blank" rel="noreferrer"><span class="icon">Go</span> <span id="grafanaText">Grafana</span></a>
+          <button id="refresh" class="btn primary" type="button"><span class="icon">R</span> Refresh</button>
+        </nav>
+      </section>
+
+      <section class="metrics" aria-label="Production signals">
+        <article class="metric">
+          <div class="label">Health</div>
+          <div id="healthValue" class="value">...</div>
+          <div id="healthHint" class="hint">checking</div>
+        </article>
+        <article class="metric">
+          <div class="label">Queue Depth</div>
+          <div id="queueValue" class="value">...</div>
+          <div class="hint">Redis order backlog</div>
+        </article>
+        <article class="metric">
+          <div class="label">Order Intake</div>
+          <div id="intakeValue" class="value">...</div>
+          <div class="hint">accepted by API</div>
+        </article>
+        <article class="metric">
+          <div class="label">Cache Hit Rate</div>
+          <div id="cacheValue" class="value">...</div>
+          <div class="hint">product reads</div>
+        </article>
+        <article class="metric">
+          <div class="label">HTTP p95</div>
+          <div id="latencyValue" class="value">...</div>
+          <div class="hint">orders route</div>
+        </article>
+      </section>
+
+      <section class="grid">
+        <div class="stack">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Inventory</h2>
+                <div class="panel-sub">Live product reads use Redis cache invalidation after writes</div>
+              </div>
+              <span id="cacheChip" class="chip">cache ...</span>
+            </div>
+            <div id="products" class="panel-body product-list" aria-live="polite"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Request Path</h2>
+                <div class="panel-sub">The same user action fans out across the distributed services</div>
+              </div>
+            </div>
+            <div class="panel-body strip">
+              <div class="stage"><b>Client</b><span>idempotency key</span></div>
+              <div class="stage"><b>API</b><span>rate limit + enqueue</span></div>
+              <div class="stage"><b>Redis</b><span>cache + queue</span></div>
+              <div class="stage"><b>Worker</b><span>async processing</span></div>
+              <div class="stage"><b>Postgres</b><span>atomic inventory</span></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="stack">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Order Controls</h2>
+                <div class="panel-sub">Async queue path and synchronous comparison path</div>
+              </div>
+            </div>
+            <div class="panel-body stack">
+              <div class="control-row">
+                <select id="productSelect" aria-label="Product"></select>
+                <span id="selectedStock" class="chip good">stock ...</span>
+              </div>
+              <div class="button-grid">
+                <button id="queueOrder" class="btn primary" type="button"><span class="icon">+</span> Queue order</button>
+                <button id="syncOrder" class="btn" type="button"><span class="icon">S</span> Sync order</button>
+                <button id="burst" class="btn warning" type="button"><span class="icon">10x</span> Burst</button>
+              </div>
+              <div id="log" class="log" aria-live="polite">waiting for activity</div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Recent Orders</h2>
+                <div class="panel-sub">Status updates are polled from Postgres through the API</div>
+              </div>
+              <span id="orderCount" class="chip">0 tracked</span>
+            </div>
+            <div id="orders" class="panel-body timeline" aria-live="polite"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="evidence-grid" aria-label="Interview evidence">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">System Design</h2>
+              <div class="panel-sub">Distributed flash-sale order path</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <ul class="evidence-list">
+              <li><span class="tick">1</span><span>Nginx gateway balances API replicas.</span></li>
+              <li><span class="tick">2</span><span>Redis handles product cache and order queue.</span></li>
+              <li><span class="tick">3</span><span>Workers own the hot inventory write path.</span></li>
+              <li><span class="tick">4</span><span>Postgres stores products, orders, and final outcomes.</span></li>
+              <li><span class="tick">5</span><span>Prometheus scrapes API and worker metrics for Grafana.</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Observe</h2>
+              <div class="panel-sub">Signals used during load tests</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <ul class="evidence-list">
+              <li><span class="tick">Q</span><span>QPS by route, especially <code>/orders</code>.</span></li>
+              <li><span class="tick">L</span><span>p50 and p95 latency for request and DB paths.</span></li>
+              <li><span class="tick">E</span><span>HTTP error, rate-limit, and backpressure rate.</span></li>
+              <li><span class="tick">D</span><span>Queue depth, worker throughput, inventory remaining.</span></li>
+              <li><span class="tick">C</span><span>Redis cache hit rate for product reads.</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Scaling Evidence</h2>
+              <div class="panel-sub">Local 2-CPU Colima saturation run</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <table class="stat-table">
+              <thead>
+                <tr>
+                  <th>Shape</th>
+                  <th>QPS</th>
+                  <th>p95</th>
+                  <th>Failure</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1 API / 1 worker</td>
+                  <td>332.5</td>
+                  <td>987 ms</td>
+                  <td>13.7%</td>
+                </tr>
+                <tr>
+                  <td>3 API / 3 worker</td>
+                  <td>117.6</td>
+                  <td>2.38 s</td>
+                  <td>34.3%</td>
+                </tr>
+                <tr>
+                  <td>80-VU smoke</td>
+                  <td>137.5</td>
+                  <td>1.05 s</td>
+                  <td>0%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">What Breaks</h2>
+              <div class="panel-sub">Saturation point and bottlenecks</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <ul class="evidence-list">
+              <li><span class="tick">A</span><span>API/gateway EOFs appear under heavy connection pressure.</span></li>
+              <li><span class="tick">B</span><span>Sync writes push user latency directly onto Postgres row locks.</span></li>
+              <li><span class="tick">C</span><span>Async intake stays safer, but Redis queue depth grows.</span></li>
+              <li><span class="tick">D</span><span>More replicas on one small host increase CPU and DB contention.</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Improvements Made</h2>
+              <div class="panel-sub">Reliability and operability changes</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <ul class="evidence-list">
+              <li><span class="tick">I</span><span>Moved order processing out of the request path.</span></li>
+              <li><span class="tick">I</span><span>Added idempotency keys for retry-safe clients.</span></li>
+              <li><span class="tick">I</span><span>Added atomic inventory decrement to prevent overselling.</span></li>
+              <li><span class="tick">I</span><span>Added Redis cache, rate limiting, and queue-depth backpressure.</span></li>
+              <li><span class="tick">I</span><span>Added k6 tests, Prometheus metrics, and Grafana panels.</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Handoff</h2>
+              <div class="panel-sub">Artifacts and future work</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <ul class="evidence-list">
+              <li><span class="tick">G</span><span>GitHub repo and release zip are published.</span></li>
+              <li><span class="tick">C</span><span>Railway deployment runs API, worker, Postgres, and Redis.</span></li>
+              <li><span class="tick">D</span><span>README includes design, runbook, load tests, and Excalidraw diagram.</span></li>
+              <li><span class="tick">F</span><span>Next: OpenTelemetry traces, alerts, queue-age SLO, DLQ replay, autoscaling, Terraform.</span></li>
+            </ul>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      const state = {
+        products: [],
+        selectedProductId: 1,
+        orders: [],
+        busy: false
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const localGrafanaUrl = "http://localhost:3100/d/flash-sale-signals/flash-sale-production-signals?orgId=1&from=now-15m&to=now&refresh=5s";
+      const repoObserveUrl = "https://github.com/dyyfk/flash-sale-observability-demo#observe-the-system";
+
+      if (!["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+        $("grafanaLink").href = repoObserveUrl;
+        $("grafanaText").textContent = "Observe";
+      } else {
+        $("grafanaLink").href = localGrafanaUrl;
+      }
+
+      function money(cents) {
+        return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+      }
+
+      function number(value) {
+        return new Intl.NumberFormat("en-US").format(Math.round(Number(value || 0)));
+      }
+
+      function time(value) {
+        if (!value) return "just now";
+        return new Intl.DateTimeFormat("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          second: "2-digit"
+        }).format(new Date(value));
+      }
+
+      function setBusy(isBusy) {
+        state.busy = isBusy;
+        for (const id of ["refresh", "queueOrder", "syncOrder", "burst"]) {
+          $(id).disabled = isBusy;
+        }
+      }
+
+      function toast(message) {
+        const node = $("toast");
+        node.textContent = message;
+        node.classList.add("show");
+        window.clearTimeout(node.timer);
+        node.timer = window.setTimeout(() => node.classList.remove("show"), 2600);
+      }
+
+      function log(payload) {
+        const text = typeof payload === "string" ? payload : JSON.stringify(payload, null, 2);
+        $("log").textContent = text;
+      }
+
+      async function request(path, options = {}) {
+        const response = await fetch(path, options);
+        const contentType = response.headers.get("content-type") || "";
+        const body = contentType.includes("application/json") ? await response.json() : await response.text();
+        if (!response.ok) {
+          const error = new Error(body?.error || response.statusText);
+          error.body = body;
+          error.status = response.status;
+          throw error;
+        }
+        return body;
+      }
+
+      async function loadHealth() {
+        try {
+          await request("/health");
+          $("healthValue").textContent = "OK";
+          $("healthHint").textContent = "API, Redis, Postgres";
+        } catch (error) {
+          $("healthValue").textContent = "DOWN";
+          $("healthHint").textContent = error.message;
+        }
+      }
+
+      async function loadProducts() {
+        const body = await request("/products");
+        state.products = body.products || [];
+        $("cacheChip").textContent = body.cached ? "cache hit" : "cache miss";
+        $("cacheChip").className = `chip ${body.cached ? "good" : "warn"}`;
+        if (!state.products.some((product) => product.id === state.selectedProductId) && state.products[0]) {
+          state.selectedProductId = state.products[0].id;
+        }
+        renderProducts();
+        renderProductSelect();
+      }
+
+      function renderProducts() {
+        const selected = state.selectedProductId;
+        $("products").innerHTML = state.products.map((product) => `
+          <article class="product-row ${product.id === selected ? "selected" : ""}">
+            <div>
+              <h3 class="product-name">${product.name}</h3>
+              <div class="product-meta">
+                <span class="chip">${money(product.price_cents)}</span>
+                <span class="chip ${product.stock > 1000 ? "good" : "warn"}">${number(product.stock)} left</span>
+                <span class="chip">id ${product.id}</span>
+              </div>
+            </div>
+            <button class="btn primary" type="button" data-product="${product.id}">
+              <span class="icon">+</span> Queue
+            </button>
+          </article>
+        `).join("");
+        for (const button of document.querySelectorAll("[data-product]")) {
+          button.addEventListener("click", () => queueOrder(Number(button.dataset.product)));
+        }
+      }
+
+      function renderProductSelect() {
+        $("productSelect").innerHTML = state.products.map((product) => `
+          <option value="${product.id}" ${product.id === state.selectedProductId ? "selected" : ""}>
+            ${product.name} - ${number(product.stock)} left
+          </option>
+        `).join("");
+        const product = state.products.find((item) => item.id === state.selectedProductId);
+        $("selectedStock").textContent = product ? `${number(product.stock)} left` : "stock ...";
+      }
+
+      function parseMetric(text, prefix, labels = {}) {
+        const lines = text.split("\\n");
+        for (const line of lines) {
+          if (!line.startsWith(prefix)) continue;
+          let matches = true;
+          for (const [key, value] of Object.entries(labels)) {
+            if (!line.includes(`${key}="${value}"`)) {
+              matches = false;
+              break;
+            }
+          }
+          if (matches) {
+            const parts = line.trim().split(/\\s+/);
+            return Number(parts[parts.length - 1]);
+          }
+        }
+        return 0;
+      }
+
+      function histogramP95(text, metric, labelFilter) {
+        const buckets = [];
+        for (const line of text.split("\\n")) {
+          if (!line.startsWith(`${metric}_bucket`)) continue;
+          if (!Object.entries(labelFilter).every(([key, value]) => line.includes(`${key}="${value}"`))) continue;
+          const le = line.match(/le="([^"]+)"/)?.[1];
+          const value = Number(line.trim().split(/\\s+/).pop());
+          if (le && Number.isFinite(value)) {
+            buckets.push({ le: le === "+Inf" ? Infinity : Number(le), value });
+          }
+        }
+        buckets.sort((a, b) => a.le - b.le);
+        const total = buckets[buckets.length - 1]?.value || 0;
+        if (!total) return 0;
+        const target = total * 0.95;
+        return buckets.find((bucket) => bucket.value >= target)?.le || 0;
+      }
+
+      async function loadMetrics() {
+        const text = await request("/metrics");
+        const depth = parseMetric(text, "order_queue_depth");
+        const queued = parseMetric(text, "orders_enqueued_total", { status: "queued" });
+        const rejected = parseMetric(text, "orders_enqueued_total", { status: "rejected" });
+        const hits = parseMetric(text, "cache_events_total", { result: "hit" });
+        const misses = parseMetric(text, "cache_events_total", { result: "miss" });
+        const p95 = histogramP95(text, "http_request_duration_seconds", { route: "/orders" });
+
+        $("queueValue").textContent = number(depth);
+        $("intakeValue").textContent = number(queued);
+        $("cacheValue").textContent = hits + misses ? `${Math.round((hits / (hits + misses)) * 100)}%` : "0%";
+        $("latencyValue").textContent = p95 === Infinity ? ">5s" : `${Math.round(p95 * 1000)}ms`;
+        if (rejected > 0) {
+          $("queueValue").nextElementSibling.textContent = `${number(rejected)} controlled rejections`;
+        }
+      }
+
+      function statusClass(status) {
+        if (status === "accepted") return "good";
+        if (["failed", "rejected"].includes(status)) return "bad";
+        return "warn";
+      }
+
+      function renderOrders() {
+        $("orderCount").textContent = `${state.orders.length} tracked`;
+        $("orders").innerHTML = state.orders.length ? state.orders.map(({ order }) => `
+          <article class="order-row">
+            <div class="order-id">#${order.id}</div>
+            <div class="order-main">
+              <div class="order-product">${order.product_name || productName(order.product_id)}</div>
+              <div class="order-time">${time(order.updated_at)} - attempts ${order.attempts ?? 0}</div>
+            </div>
+            <span class="chip ${statusClass(order.status)}">
+              <span class="status-dot ${statusClass(order.status)}"></span>
+              ${order.status}
+            </span>
+          </article>
+        `).join("") : "<div class=\"chip\">no tracked orders yet</div>";
+      }
+
+      function productName(id) {
+        return state.products.find((product) => product.id === Number(id))?.name || `Product ${id}`;
+      }
+
+      function rememberOrder(order) {
+        const existing = state.orders.findIndex((item) => String(item.order.id) === String(order.id));
+        const entry = { order };
+        if (existing >= 0) {
+          state.orders.splice(existing, 1, entry);
+        } else {
+          state.orders.unshift(entry);
+        }
+        state.orders = state.orders.slice(0, 16);
+        renderOrders();
+      }
+
+      async function pollOrder(id, attempts = 0) {
+        try {
+          const body = await request(`/orders/${id}`);
+          rememberOrder(body.order);
+          if (["pending", "processing", "retrying"].includes(body.order.status) && attempts < 20) {
+            window.setTimeout(() => pollOrder(id, attempts + 1), 650);
+          } else {
+            await Promise.allSettled([loadProducts(), loadMetrics()]);
+          }
+        } catch (error) {
+          log(error.body || error.message);
+        }
+      }
+
+      async function queueOrder(productId = state.selectedProductId) {
+        setBusy(true);
+        try {
+          const key = `demo-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+          const body = await request("/orders", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Idempotency-Key": key
+            },
+            body: JSON.stringify({ productId })
+          });
+          log(body);
+          rememberOrder(body.order);
+          toast(`Order #${body.order.id} queued`);
+          pollOrder(body.order.id);
+          await loadMetrics();
+        } catch (error) {
+          log(error.body || error.message);
+          toast(`Order rejected: ${error.message}`);
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      async function syncOrder() {
+        setBusy(true);
+        try {
+          const key = `sync-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+          const body = await request("/orders-sync", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Idempotency-Key": key
+            },
+            body: JSON.stringify({ productId: state.selectedProductId })
+          });
+          log(body);
+          rememberOrder(body.order);
+          toast(`Sync order #${body.order.id} ${body.order.status}`);
+          await Promise.all([loadProducts(), loadMetrics()]);
+        } catch (error) {
+          log(error.body || error.message);
+          toast(`Sync order rejected: ${error.message}`);
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      async function burst() {
+        setBusy(true);
+        try {
+          const productId = state.selectedProductId;
+          const requests = Array.from({ length: 10 }, (_, index) => request("/orders", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Idempotency-Key": `burst-${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`
+            },
+            body: JSON.stringify({ productId })
+          }).then((body) => {
+            rememberOrder(body.order);
+            pollOrder(body.order.id);
+            return body.order.id;
+          }));
+          const settled = await Promise.allSettled(requests);
+          const accepted = settled.filter((item) => item.status === "fulfilled").length;
+          log({ burst: { attempted: 10, accepted, rejected: 10 - accepted } });
+          toast(`${accepted} orders queued`);
+          await loadMetrics();
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      async function refreshAll() {
+        setBusy(true);
+        try {
+          await Promise.all([loadHealth(), loadProducts(), loadMetrics()]);
+        } catch (error) {
+          log(error.body || error.message);
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      $("refresh").addEventListener("click", refreshAll);
+      $("queueOrder").addEventListener("click", () => queueOrder());
+      $("syncOrder").addEventListener("click", syncOrder);
+      $("burst").addEventListener("click", burst);
+      $("productSelect").addEventListener("change", (event) => {
+        state.selectedProductId = Number(event.target.value);
+        renderProducts();
+        renderProductSelect();
+      });
+
+      window.setInterval(() => {
+        loadHealth();
+        loadMetrics();
+      }, 5000);
+
+      window.addEventListener("error", (event) => {
+        log(event.message);
+      });
+
+      refreshAll();
+    </script>
+  </body>
+</html>

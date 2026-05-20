@@ -3,6 +3,7 @@
 Small distributed system for an infrastructure interview. It models a flash-sale order path with an API, Redis queue/cache, async worker, Postgres inventory writes, Prometheus metrics, Grafana dashboard, and k6 load tests.
 
 Live API: [`https://api-production-80a1.up.railway.app`](https://api-production-80a1.up.railway.app)
+Live demo console: [`https://api-production-80a1.up.railway.app/demo`](https://api-production-80a1.up.railway.app/demo)
 
 ## Architecture
 
@@ -42,6 +43,7 @@ docker compose up --build
 Useful URLs:
 
 - API: `http://localhost:3000`
+- Demo console: `http://localhost:3000/demo`
 - Products: `http://localhost:3000/products`
 - Metrics: `http://localhost:3000/metrics`
 - Prometheus: `http://localhost:9090`
