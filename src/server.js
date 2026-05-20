@@ -30,13 +30,27 @@ const redis = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379", {
 
 const app = express();
 app.set("trust proxy", true);
+app.disable("etag");
 app.use(express.json({ limit: "64kb" }));
+
+app.use((req, res, next) => {
+  if (
+    req.path === "/health" ||
+    req.path === "/products" ||
+    req.path === "/metrics" ||
+    req.path.startsWith("/orders")
+  ) {
+    res.set("Cache-Control", "no-store");
+  }
+  next();
+});
 
 app.get("/", (_req, res) => {
   res.redirect("/demo");
 });
 
 app.get(["/demo", "/demo/"], (_req, res) => {
+  res.set("Cache-Control", "no-store");
   res.sendFile(path.join(publicDir, "demo.html"));
 });
 
