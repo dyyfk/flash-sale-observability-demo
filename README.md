@@ -147,6 +147,15 @@ docker compose up --scale api=3 --scale worker=3
 k6 run load/orders-spike.js
 ```
 
+Autoscaling demo:
+
+```bash
+docker compose up -d --scale worker=1 worker
+npm run autoscale:workers
+```
+
+Then press **50x Burst** in the demo console. The autoscaler watches `queueDepth / workerReplicas` from `/demo-state` plus `docker compose ps`. If backlog per worker is above `10`, it adds one worker up to `5`; after the queue stays near empty for four samples, it scales workers back down.
+
 Expected result on a real multi-node environment: API scaling improves request acceptance, but worker scaling is what drains the queue faster. On the local 2-CPU Colima VM used for this demo, scaling to 3 API and 3 worker containers made results worse because the host itself became saturated. See [`RESULTS.md`](RESULTS.md).
 
 ## Saturation Point Notes

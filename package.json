@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/server.js",
     "worker": "node src/worker.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "autoscale:workers": "node scripts/autoscale-workers.js"
   },
   "dependencies": {
     "express": "^4.19.2",

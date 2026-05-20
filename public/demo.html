@@ -732,6 +732,11 @@
                 </tr>
               </tbody>
             </table>
+            <ul class="evidence-list" style="margin-top: 12px;">
+              <li><span class="tick">AS</span><span>Autoscaling metric: <code>queueDepth / workerReplicas</code>.</span></li>
+              <li><span class="tick">UP</span><span>Scale out when backlog per worker is above <code>10</code>.</span></li>
+              <li><span class="tick">DN</span><span>Scale in after queue depth stays near empty for four samples.</span></li>
+            </ul>
           </div>
         </section>
 
